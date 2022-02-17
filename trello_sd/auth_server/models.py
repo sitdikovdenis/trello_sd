@@ -2,6 +2,7 @@ from django.db import models
 
 
 class SubDivision(models.Model):
+    directum_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=512)
 
 
