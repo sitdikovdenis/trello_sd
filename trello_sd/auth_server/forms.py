@@ -1,14 +1,16 @@
+from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
-from .models import AppUser
+# from .models import AppUser
+from django.contrib.auth.models import User
 
 
-class AppUserLoginForm(AuthenticationForm):
+class MyAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(label='Логин',
+                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
     class Meta:
-        model = AppUser
-        fields = ('username', 'password')
-
-    def __init__(self, *args, **kwargs):
-        super(AppUserLoginForm, self).__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
+        model = User
+        fields = ('username', 'password',)

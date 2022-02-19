@@ -5,7 +5,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from auth_server.models import Employee, SubDivision
 from auth_server.serializers import EmployeeSerializer, SubDivisionSerializer
-from django.contrib import auth
+from django.contrib.auth.views import LoginView
+from auth_server.forms import MyAuthenticationForm
 
 
 class EmployeeModelViewSet(ModelViewSet):
