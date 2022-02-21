@@ -11,5 +11,5 @@ router.register('subdivisions', SubDivisionModelViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path(r'auth/', include(('auth_server.urls', 'auth_server'), namespace='auth_server'))
+    path('auth/', include(('auth_server.urls', 'auth_server'), namespace='auth_server'))
 ]
