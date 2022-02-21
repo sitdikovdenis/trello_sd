@@ -37,7 +37,8 @@ class SignupView(CreateView):
             patronymic = data['patronymic']
             employee = Employee.objects.filter(name=name, patronymic=patronymic, surname=surname)[0]
             RegisterVerificationCode.objects.create(employee=employee)
-            return redirect(f'confirmation/{employee.directum_id}', employee_id=employee.directum_id)
+            return redirect('message.html', context={'message': "На ваш email отправлено письмо для "
+                                                           "подтверждения регистрации"})
         else:
             if signup_form.errors['employee_not_found']:
                 context['errors'] = signup_form.errors['employee_not_found']
@@ -54,12 +55,28 @@ class LoginView(LoginView):
 
 
 class SignupConfirmationView(View):
-    def get(self, request, employee_id, *args, **kwargs):
-        reg_ver_code = RegisterVerificationCode.objects.filter(employee__directum_id=employee_id).last()
+    def get(self, request, confirmation_id, *args, **kwargs):
+        reg_ver_code = RegisterVerificationCode.objects.filter(uuid=confirmation_id).last()
         if reg_ver_code is None:
             raise Http404
         else:
             return render(
                 request, 'confirmation.html',
-                context={'form': SignUpConfirmationForm(instance=reg_ver_code)}
+                context={'form': SignUpConfirmationForm()}
             )
+
+    def post(self, request, confirmation_id, *args, **kwargs):
+        reg_ver_code = RegisterVerificationCode.objects.filter(uuid=confirmation_id).last()
+        code = request.POST['input_code']
+        if reg_ver_code.code == code:
+            return redirect('auth/confirmation', context={'message': "Вы успешно зарегистрированы"})
+        else:
+            return redirect('ConfirmationView', message="Неправильный код!")
+
+
+class ConfirmationView(View):
+    def get(self, request, *args, **kwargs):
+        return render(
+            request, 'message.html',
+            context={'message': args['message']}
+        )

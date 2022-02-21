@@ -1,11 +1,16 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
+import random
+import uuid
 
-import uuid, random
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
 
 class SubDivision(models.Model):
     directum_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=512)
+
+    def __str__(self):
+        return self.name
 
 
 class Employee(models.Model):
@@ -22,6 +27,9 @@ class Employee(models.Model):
     subdivision = models.ForeignKey(SubDivision, on_delete=models.SET_NULL, related_name='subdivision', null=True)
     email = models.EmailField()
     state = models.CharField(max_length=20, choices=STATE_CHOICES)
+
+    def __str__(self):
+        return f'{self.surname} {self.name}'
 
 
 class MirricoManagementUser2(AbstractUser):

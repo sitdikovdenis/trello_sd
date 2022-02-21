@@ -11,5 +11,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('signup/', auth_server.SignupView.as_view(), name='signup'),
     path('signup/register', auth_server.SignupView.as_view(), name='signup'),
-    path('signup/confirmation/<employee_id>/', auth_server.SignupConfirmationView.as_view(), name='confirmation'),
+    path('signup/confirmation/<confirmation_id>/', auth_server.SignupConfirmationView.as_view(), name='confirmation'),
+    path('confirmation/', auth_server.SignupConfirmationView.as_view(), name='confirmation'),
 ]
