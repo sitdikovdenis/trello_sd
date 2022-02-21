@@ -35,6 +35,7 @@ class Employee(models.Model):
 class MirricoManagementUser2(AbstractUser):
     employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name='employee', null=True)
     patronymic = models.CharField(max_length=256)
+    confirmed = models.BooleanField(default=False)
 
 
 class RegisterVerificationMailing(models.Model):

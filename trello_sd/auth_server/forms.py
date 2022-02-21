@@ -43,11 +43,14 @@ class SignUpForm(UserCreationForm):
         surname = self.data['last_name']
         patronymic = self.data['patronymic']
 
-        if Employee.objects.filter(name=name, patronymic=patronymic, surname=surname).count() == 0:
-            self.errors['employee_not_found'] = 'Сотрудник не работает в компании'
+        employees_qs = Employee.objects.filter(name=name, patronymic=patronymic, surname=surname)
+        if employees_qs.count() == 0:
+            self.errors['employee_signup_error'] = 'Сотрудник не работает в компании'
             return False
-        else:
-            return True
+        if MirricoManagementUser2.objects.filter(employee=employees_qs[0]).count() > 0:
+            self.errors['employee_signup_error'] = 'Сотрудник уже зарегистрирован'
+            return False
+        return True
 
 
 class SignUpConfirmationForm(ModelForm):
