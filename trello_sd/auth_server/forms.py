@@ -47,7 +47,7 @@ class SignUpForm(UserCreationForm):
         if employees_qs.count() == 0:
             self.errors['employee_signup_error'] = 'Сотрудник не работает в компании'
             return False
-        if MirricoManagementUser2.objects.filter(employee=employees_qs[0]).count() > 0:
+        if MirricoManagementUser2.objects.filter(employee=employees_qs[0], confirmed=True).count() > 0:
             self.errors['employee_signup_error'] = 'Сотрудник уже зарегистрирован'
             return False
         return True

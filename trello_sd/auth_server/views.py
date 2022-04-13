@@ -1,7 +1,10 @@
+import random
+
 from django.core.mail import send_mail
 from django.http import Http404
 from django.shortcuts import render
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView
 
 from rest_framework.viewsets import ModelViewSet
@@ -36,7 +39,15 @@ class SignupView(CreateView):
             surname = data['last_name']
             patronymic = data['patronymic']
             employee = Employee.objects.filter(name=name, patronymic=patronymic, surname=surname)[0]
-            reg_ver_code = RegisterVerificationCode.objects.create(employee=employee)
+            # закроем старые коды верификации
+            # rv_codes_qs = RegisterVerificationCode.objects.filter(employee=employee, state='Active')
+            # if rv_codes_qs is not None:
+            #     for rv_code in rv_codes_qs:
+            #         rv_code.state = 'Close'
+            #         rv_code.save()
+            RegisterVerificationCode.objects.filter(employee=employee, state='A').update(state='C')
+            code = random.randint(0, 999999)
+            reg_ver_code = RegisterVerificationCode.objects.create(employee=employee, code=code)
 
             mail_theme = f"Вы зарегистрировались на нашем СУПЕР САЙТЕ. Для продолжения перейдите по ссылке " \
                          f'http://127.0.0.1:8000/auth/signup/confirmation/{reg_ver_code.uuid} ' \
@@ -47,11 +58,12 @@ class SignupView(CreateView):
                           'sdr_dev@mail.ru',
                           [employee.email],
                           fail_silently=False, )
-            print(c)
 
-            MirricoManagementUser2.objects.create_user(username=employee.directum_id, email=employee.email,
-                                                       password=data['password1'], patronymic=patronymic,
-                                                       employee=employee)
+            if MirricoManagementUser2.objects.filter(username=employee.directum_id,
+                                                     employee=employee).count() == 0:
+                MirricoManagementUser2.objects.create_user(username=employee.directum_id, email=employee.email,
+                                                           password=data['password1'], patronymic=patronymic,
+                                                           employee=employee)
 
             return render(request, 'message.html', context={'message': "На ваш email отправлено письмо для "
                                                                        "подтверждения регистрации"})
@@ -77,10 +89,11 @@ class SignupConfirmationView(View):
         if user_qs.count() > 0:
             user_qs[0].confirmed = True
             user_qs[0].save()
-            reg_ver_code.delete()
+            reg_ver_code.state = 'C'
+            reg_ver_code.save()
 
     def get(self, request, confirmation_id, *args, **kwargs):
-        reg_ver_code = RegisterVerificationCode.objects.filter(uuid=confirmation_id).last()
+        reg_ver_code = RegisterVerificationCode.objects.filter(uuid=confirmation_id, state='A').last()
         if reg_ver_code is None:
             raise Http404
         else:
@@ -90,7 +103,7 @@ class SignupConfirmationView(View):
             )
 
     def post(self, request, confirmation_id, *args, **kwargs):
-        reg_ver_code = RegisterVerificationCode.objects.filter(uuid=confirmation_id).last()
+        reg_ver_code = RegisterVerificationCode.objects.filter(uuid=confirmation_id, state='A').last()
         code = request.POST['input_code']
         if reg_ver_code.code == code:
             message = "Учетная запись подтверждена"

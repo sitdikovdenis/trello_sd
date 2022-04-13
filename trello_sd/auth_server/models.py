@@ -45,11 +45,16 @@ class RegisterVerificationMailing(models.Model):
 
 
 class RegisterVerificationCode(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4())
+    STATE_CHOICES = (
+        ('A', 'Active'),
+        ('C', 'Close'),
+    )
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='reg_ver_code_employee')
-    code = models.CharField(max_length=6, default=random.randint(0, 999999))
+    code = models.CharField(max_length=6)
     create_at = models.DateTimeField(auto_now_add=True)
-    sent_time = models.DateTimeField(null=True)
+    sent_time = models.DateTimeField(null=True, blank=True)
+    state = models.CharField(max_length=20, choices=STATE_CHOICES, default='A')
 
     def __str__(self):
         return f'{self.employee.directum_id}; {self.code}'
